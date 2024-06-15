@@ -1,12 +1,10 @@
 {
   "version": 2,
+  "installCommand": "npm run i-prod && npm run pris-gen-pg",
   "builds": [
     {
       "src": "src/main.ts",
-      "use": "@vercel/node",
-      "config": {
-        "installCommand": "npm run i-prod && npm run pris-gen-pg"
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [

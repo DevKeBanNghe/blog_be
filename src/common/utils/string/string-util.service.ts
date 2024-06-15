@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
-import * as bcrypt from 'bcrypt';
 import ms from 'ms';
 import _ from 'lodash';
+import { genSalt, compare, hash } from 'bcryptjs';
 
 @Injectable()
 export class StringUtilService {
@@ -21,12 +21,12 @@ export class StringUtilService {
   }
 
   async hashSync(str: string) {
-    const salt = await bcrypt.genSalt();
-    return await bcrypt.hash(str, salt);
+    const salt = await genSalt();
+    return await hash(str, salt);
   }
 
   async compareHashSync(str: string, hash: string) {
-    return await bcrypt.compare(str, hash);
+    return await compare(str, hash);
   }
 
   toMS(str: string) {

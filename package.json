@@ -21,7 +21,8 @@
     "pris-mig-db": "npm run pris-mig-pg && npm run pris-push-mongo",
     "pris-gen": "cross-env-shell prisma generate --schema=./prisma/schema.$DBNAME.prisma",
     "pris-gen-pg": "cross-env DBNAME=postgresql npm run pris-gen",
-    "init-husky": "husky && type husky-prepare\\pre-commit > .husky/pre-commit && type husky-prepare\\commit-msg > .husky/commit-msg"
+    "init-husky": "husky && type husky-prepare\\pre-commit > .husky/pre-commit && type husky-prepare\\commit-msg > .husky/commit-msg",
+    "postinstall": "npm run pris-gen-pg"
   },
   "private": true,
   "dependencies": {

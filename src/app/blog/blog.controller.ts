@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -15,7 +16,10 @@ import { CreateBlogDto } from './dto/create-blog.dto';
 import { GetBlogListByPaginationDto } from './dto/get-blog.dto';
 import { ParseParamsPaginationPipe } from 'src/common/pipes/parse-params-pagination.pipe';
 import { ParseIntArrayPipe } from 'src/common/pipes/parse-int-array.pipe';
-import { UpdateBlogDto } from './dto/update-blog.dto';
+import {
+  UpdateBlogDto,
+  UpdateBlogTrackingInfoDto,
+} from './dto/update-blog.dto';
 
 @Controller('blogs')
 export class BlogController {
@@ -53,5 +57,16 @@ export class BlogController {
   @Delete()
   deleteBlogs(@Query('ids', ParseIntArrayPipe) ids: number[]) {
     return this.blogService.remove(ids);
+  }
+
+  @Patch('/tracking/:id')
+  updateBlogTrackingInfo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDto: UpdateBlogTrackingInfoDto
+  ) {
+    return this.blogService.updateBlogTrackingInfo({
+      blog_id: id,
+      ...updateDto,
+    });
   }
 }

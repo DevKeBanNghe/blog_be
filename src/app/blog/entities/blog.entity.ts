@@ -1,5 +1,4 @@
 import { IsNumber, IsString } from 'class-validator';
-
 export class Blog {
   @IsNumber()
   blog_id: number;
@@ -11,4 +10,6 @@ export class Blog {
   blog_description: string;
   @IsString()
   blog_thumbnail: string;
+  @IsNumber()
+  blog_view: number;
 }

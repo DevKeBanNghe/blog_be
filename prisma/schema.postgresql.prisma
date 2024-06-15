@@ -21,6 +21,7 @@ model Blog {
   blog_description String?
   blog_thumbnail   String?
   blog_content     String
+  blog_view        Int      @default(0)
   Tag              Tag[]
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt

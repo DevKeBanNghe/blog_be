@@ -10,9 +10,11 @@ import { CreateBlogDto } from './dto/create-blog.dto';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { GetBlogListByPaginationDto } from './dto/get-blog.dto';
 import { ApiService } from 'src/common/utils/api/api.service';
-import { UpdateBlogDto } from './dto/update-blog.dto';
+import {
+  UpdateBlogDto,
+  UpdateBlogTrackingInfoDto,
+} from './dto/update-blog.dto';
 import { TagService } from '../tag/tag.service';
-
 @Injectable()
 export class BlogService
   implements
@@ -22,6 +24,7 @@ export class BlogService
     DeleteService,
     UpdateService<UpdateBlogDto>
 {
+  private readonly TRENDING_THRESHOLD = 10; // Lượng view cần để trở thành `hot post`
   constructor(
     private prismaService: PrismaService,
     private apiService: ApiService,
@@ -113,6 +116,7 @@ export class BlogService
   async getListByPaginationForUser({
     page,
     itemPerPage,
+    search,
   }: GetBlogListByPaginationDto) {
     const skip = (page - 1) * itemPerPage;
     const list = await this.prismaService.blog.findMany({
@@ -120,16 +124,39 @@ export class BlogService
         blog_id: true,
         blog_title: true,
         blog_description: true,
+        blog_view: true,
       },
       skip,
       take: itemPerPage,
       orderBy: {
         blog_id: 'desc',
       },
+      where: {
+        OR: [
+          {
+            blog_title: {
+              contains: search,
+            },
+          },
+          {
+            blog_description: {
+              contains: search,
+            },
+          },
+          {
+            blog_content: {
+              contains: search,
+            },
+          },
+        ],
+      },
     });
 
     return this.apiService.formatPagination<typeof list>({
-      list,
+      list: list.map((item) => ({
+        ...item,
+        blog_is_trending: item.blog_view >= this.TRENDING_THRESHOLD,
+      })),
       totalItems: await this.prismaService.blog.count(),
       page,
       itemPerPage,
@@ -145,5 +172,22 @@ export class BlogService
     await this.tagService.updateBlog({ blog_id: blogData.blog_id, tag_ids });
 
     return blogData;
+  }
+
+  async updateBlogTrackingInfo({
+    blog_id,
+    ...dataUpdate
+  }: UpdateBlogTrackingInfoDto) {
+    return await this.prismaService.blog.update({
+      data: {
+        blog_view: {
+          increment: 1,
+        },
+        ...dataUpdate,
+      },
+      where: {
+        blog_id,
+      },
+    });
   }
 }

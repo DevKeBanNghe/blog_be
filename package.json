@@ -22,7 +22,7 @@
     "pris-gen": "cross-env-shell prisma generate --schema=./prisma/schema.$DBNAME.prisma",
     "pris-gen-pg": "cross-env DBNAME=postgresql npm run pris-gen",
     "init-husky": "husky && type husky-prepare\\pre-commit > .husky/pre-commit && type husky-prepare\\commit-msg > .husky/commit-msg",
-    "postinstall": "npm run pris-gen-pg"
+    "postinstall": "(if exist .husky rmdir /s /q .husky) && npm run init-husky"
   },
   "private": true,
   "dependencies": {

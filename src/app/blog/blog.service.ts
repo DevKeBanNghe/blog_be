@@ -131,25 +131,6 @@ export class BlogService
       orderBy: {
         blog_id: 'desc',
       },
-      where: {
-        OR: [
-          {
-            blog_title: {
-              contains: search,
-            },
-          },
-          {
-            blog_description: {
-              contains: search,
-            },
-          },
-          {
-            blog_content: {
-              contains: search,
-            },
-          },
-        ],
-      },
     });
 
     return this.apiService.formatPagination<typeof list>({

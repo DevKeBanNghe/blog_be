@@ -116,7 +116,7 @@ export class BlogService
   async getListByPaginationForUser({
     page,
     itemPerPage,
-    search,
+    search = '',
   }: GetBlogListByPaginationDto) {
     const skip = (page - 1) * itemPerPage;
     const list = await this.prismaService.blog.findMany({
@@ -130,6 +130,38 @@ export class BlogService
       take: itemPerPage,
       orderBy: {
         blog_id: 'desc',
+      },
+      where: {
+        OR: [
+          {
+            Tag: {
+              some: {
+                tag_name: {
+                  contains: search,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+          {
+            blog_title: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            blog_description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            blog_content: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
       },
     });
 

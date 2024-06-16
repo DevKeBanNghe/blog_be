@@ -10,8 +10,6 @@ import { Request, Response } from 'express';
 import { HttpHeaders } from 'src/consts';
 import { ApiService } from '../utils/api/api.service';
 import { HttpAdapterHost } from '@nestjs/core';
-import { TokenExpiredError } from '@nestjs/jwt';
-import { COOKIE_SSO_REFRESH_TOKEN_KEY } from 'src/consts/cookie.const';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
@@ -43,10 +41,6 @@ export class AllExceptionFilter implements ExceptionFilter {
             };
 
       const errors = this.getMessagesError(exceptionInstance.exception);
-      console.log(
-        '🚀 ~ AllExceptionFilter ~ exceptionInstance:',
-        exceptionInstance
-      );
       Logger.error({
         path: request.path,
         requestId: request.headers[HttpHeaders.REQUEST_ID],

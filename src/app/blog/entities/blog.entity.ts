@@ -1,5 +1,7 @@
 import { IsNumber, IsString } from 'class-validator';
-export class Blog {
+import { Blog as BlogPrisma } from '@prisma/postgresql_client';
+
+export class Blog implements BlogPrisma {
   @IsNumber()
   blog_id: number;
   @IsString()
@@ -12,4 +14,6 @@ export class Blog {
   blog_thumbnail: string;
   @IsNumber()
   blog_view: number;
+  created_at: Date;
+  updated_at: Date;
 }

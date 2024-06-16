@@ -9,10 +9,12 @@ import { FormatResponseInterceptor } from './common/interceptors/format-response
 import { AllExceptionFilter } from './common/filters/all-exception.filter';
 import { ApiService } from './common/utils/api/api.service';
 import { HttpAdapterHost } from '@nestjs/core';
+import setHeadersMiddleware from './common/middlewares/set-headers.middleware';
 
 export const initApp = async (app: INestApplication) => {
   const configService = app.get(ConfigService);
   app.setGlobalPrefix(configService.get(EnvVars.SERVER_PREFIX));
+  app.use(setHeadersMiddleware(app));
   app.enableVersioning({
     type: VersioningType.HEADER,
     header: HttpHeaders.VERSION,

@@ -1,11 +1,11 @@
-import { Controller, Get, Redirect } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { EnvVars } from 'src/consts';
-
 @Controller()
 export class AppController {
+  constructor(private configService: ConfigService) {}
   @Get()
-  @Redirect(process.env[EnvVars.FE_URL])
-  redirectToSSOFe() {
-    return { redirect_to: process.env[EnvVars.FE_URL] };
+  welcome() {
+    return `Welcome to ${this.configService.get(EnvVars.APP_NAME)} service !`;
   }
 }

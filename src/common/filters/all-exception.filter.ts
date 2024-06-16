@@ -43,6 +43,10 @@ export class AllExceptionFilter implements ExceptionFilter {
             };
 
       const errors = this.getMessagesError(exceptionInstance.exception);
+      console.log(
+        '🚀 ~ AllExceptionFilter ~ exceptionInstance:',
+        exceptionInstance
+      );
       Logger.error({
         path: request.path,
         requestId: request.headers[HttpHeaders.REQUEST_ID],

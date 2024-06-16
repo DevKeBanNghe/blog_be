@@ -9,7 +9,6 @@ import { UserModule } from './user/user.module';
 import { WinstonEnvs } from 'src/consts';
 import { ApiModule } from 'src/common/utils/api/api.module';
 import { StringUtilModule } from 'src/common/utils/string/string-util.module';
-import { DefaultParamsMiddleware } from 'src/common/middlewares/default-params.middleware';
 import { applyOtherMiddlewares } from 'src/common/middlewares';
 import { PrismaModule } from 'src/common/db/prisma/prisma.module';
 import { SSOModule } from 'src/common/utils/api/sso/sso.module';
@@ -57,6 +56,5 @@ import { AuthModule } from './auth/auth.module';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     applyOtherMiddlewares(consumer);
-    consumer.apply(DefaultParamsMiddleware).forRoutes('*');
   }
 }

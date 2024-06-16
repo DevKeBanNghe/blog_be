@@ -11,6 +11,7 @@
     "e2e:watch": "npm run test:e2e -- --watch",
     "format": "nx format:write",
     "i-prod": "npm i --ignore-scripts",
+    "prod": "node dist/main.js",
     "pris-init": "cross-env-shell prisma init --datasource-provider $DBNAME --generator-provider prisma-client-$DBNAME --output ../node_modules/@prisma/${DBNAME}_client",
     "pris-init-pg": "cross-env DBNAME=postgresql npm run pris-init",
     "pris-init-mongo": "cross-env DBNAME=mongodb npm run pris-init",

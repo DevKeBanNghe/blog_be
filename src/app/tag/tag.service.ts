@@ -115,7 +115,7 @@ export class TagService
     });
   }
 
-  async updateBlog({ blog_id, tag_ids }: UpdateBlogDto) {
+  async updateBlog({ blog_id, tag_ids = [] }: UpdateBlogDto) {
     await this.prismaService.blogTag.deleteMany({
       where: { blog_id, tag_id: { notIn: tag_ids } },
     });

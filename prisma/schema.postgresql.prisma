@@ -16,23 +16,32 @@ datasource db {
 }
 
 model Blog {
-  blog_id          Int      @id @default(autoincrement())
+  blog_id          Int       @id @default(autoincrement())
   blog_title       String
   blog_description String?
   blog_thumbnail   String?
   blog_content     String
-  blog_view        Int      @default(0)
-  Tag              Tag[]
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  blog_view        Int       @default(0)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  BlogTag          BlogTag[]
+}
+
+model BlogTag {
+  Blog    Blog @relation(fields: [blog_id], references: [blog_id])
+  blog_id Int
+  Tag     Tag  @relation(fields: [tag_id], references: [tag_id])
+  tag_id  Int
+
+  @@id([blog_id, tag_id])
 }
 
 model Tag {
-  tag_id          Int      @id @default(autoincrement())
+  tag_id          Int       @id @default(autoincrement())
   tag_name        String
   tag_description String?
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-  Blog            Blog?    @relation(fields: [blog_id], references: [blog_id])
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
   blog_id         Int?
+  BlogTag         BlogTag[]
 }

@@ -52,3 +52,5 @@ data
 
 .env   
 migrations
+
+.vscode

@@ -115,28 +115,29 @@ export class TagService
     });
   }
 
-  private async removeBlogExist(blog_id: number) {
-    return this.prismaService.tag.updateMany({
-      data: {
-        blog_id: null,
-      },
-      where: {
-        blog_id,
-      },
-    });
-  }
-
   async updateBlog({ blog_id, tag_ids }: UpdateBlogDto) {
-    await this.removeBlogExist(blog_id);
-    return this.prismaService.tag.updateMany({
-      data: {
-        blog_id,
-      },
-      where: {
-        tag_id: {
-          in: tag_ids,
-        },
-      },
+    await this.prismaService.blogTag.deleteMany({
+      where: { blog_id, tag_id: { notIn: tag_ids } },
     });
+    for (const tag_id of tag_ids) {
+      await this.prismaService.blogTag.upsert({
+        create: {
+          blog_id,
+          tag_id,
+        },
+        update: {
+          blog_id,
+          tag_id,
+        },
+        where: {
+          blog_id_tag_id: {
+            blog_id,
+            tag_id,
+          },
+        },
+      });
+    }
+
+    return {};
   }
 }

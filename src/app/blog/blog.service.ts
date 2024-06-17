@@ -59,16 +59,21 @@ export class BlogService
         blog_title: true,
         blog_description: true,
         blog_content: true,
-        Tag: {
+        BlogTag: {
           select: {
-            tag_id: true,
-            tag_name: true,
+            Tag: {
+              select: {
+                tag_id: true,
+                tag_name: true,
+              },
+            },
           },
         },
       },
     });
     if (!blogData) throw new BadRequestException('Blog not found');
-    return blogData;
+    const { BlogTag = [], ...blogDetail } = blogData;
+    return { ...blogDetail, Tag: BlogTag.map((item) => item.Tag) };
   }
 
   getList(getBlogListByPaginationDto: GetBlogListByPaginationDto) {
@@ -134,11 +139,13 @@ export class BlogService
       where: {
         OR: [
           {
-            Tag: {
+            BlogTag: {
               some: {
-                tag_name: {
-                  contains: search,
-                  mode: 'insensitive',
+                Tag: {
+                  tag_name: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
                 },
               },
             },

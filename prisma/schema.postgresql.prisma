@@ -45,3 +45,12 @@ model Tag {
   blog_id         Int?
   BlogTag         BlogTag[]
 }
+
+model Image {
+  image_id          Int      @id @default(autoincrement())
+  image_url         String
+  image_name        String?
+  image_description String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+}

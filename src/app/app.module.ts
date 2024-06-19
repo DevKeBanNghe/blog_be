@@ -16,6 +16,8 @@ import { HttpServiceUtilModule } from 'src/common/utils/httpService/http-service
 import { BlogModule } from './blog/blog.module';
 import { TagModule } from './tag/tag.module';
 import { AuthModule } from './auth/auth.module';
+import { ImageModule } from './image/image.module';
+import { FileUtilModule } from 'src/common/utils/file/file-util.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { AuthModule } from './auth/auth.module';
     BlogModule,
     TagModule,
     AuthModule,
+    ImageModule,
+    FileUtilModule,
   ],
   controllers: [AppController],
   providers: [

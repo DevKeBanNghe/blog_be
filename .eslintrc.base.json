@@ -10,7 +10,14 @@
           "error",
           {
             "enforceBuildableLibDependency": true,
-            "allow": ["src", "@prisma", "@nestjs", "bcryptjs", "express"],
+            "allow": [
+              "src",
+              "@prisma",
+              "@nestjs",
+              "bcryptjs",
+              "express",
+              "multer"
+            ],
             "depConstraints": [
               {
                 "sourceTag": "*",

@@ -24,7 +24,6 @@ export class BlogService
     DeleteService,
     UpdateService<UpdateBlogDto>
 {
-  private readonly TRENDING_THRESHOLD = 10; // Lượng view cần để trở thành `hot post`
   constructor(
     private prismaService: PrismaService,
     private apiService: ApiService,
@@ -59,6 +58,7 @@ export class BlogService
         blog_title: true,
         blog_description: true,
         blog_content: true,
+        blog_thumbnail: true,
         BlogTag: {
           select: {
             Tag: {
@@ -130,6 +130,8 @@ export class BlogService
         blog_title: true,
         blog_description: true,
         blog_view: true,
+        created_at: true,
+        blog_thumbnail: true,
       },
       skip,
       take: itemPerPage,
@@ -171,12 +173,12 @@ export class BlogService
         ],
       },
     });
-
-    return this.apiService.formatPagination<typeof list>({
-      list: list.map((item) => ({
-        ...item,
-        blog_is_trending: item.blog_view >= this.TRENDING_THRESHOLD,
-      })),
+    const listData = list.map((item) => ({
+      ...item,
+      created_at: item.created_at.toLocaleDateString('en-GB'),
+    }));
+    return this.apiService.formatPagination<typeof listData>({
+      list: listData,
       totalItems: await this.prismaService.blog.count(),
       page,
       itemPerPage,

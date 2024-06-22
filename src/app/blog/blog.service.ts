@@ -15,10 +15,12 @@ import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { GetBlogListByPaginationDto } from './dto/get-blog.dto';
 import { ApiService } from 'src/common/utils/api/api.service';
 import {
+  UpdatePublishBlogStatusDto,
   UpdateBlogDto,
   UpdateBlogTrackingInfoDto,
 } from './dto/update-blog.dto';
 import { TagService } from '../tag/tag.service';
+import { Blog } from './entities/blog.entity';
 @Injectable()
 export class BlogService
   implements
@@ -33,16 +35,18 @@ export class BlogService
     private apiService: ApiService,
     private tagService: TagService
   ) {}
-  async update({ blog_id, tag_ids, ...dataUpdate }: UpdateBlogDto) {
-    const blogData = await this.prismaService.blog.update({
+
+  private updateBlog({ blog_id, ...dataUpdate }: UpdateBlogDto) {
+    return this.prismaService.blog.update({
       data: dataUpdate,
       where: {
         blog_id,
       },
     });
-
+  }
+  async update({ blog_id, tag_ids, ...dataUpdate }: UpdateBlogDto) {
+    const blogData = await this.updateBlog({ blog_id, ...dataUpdate });
     await this.tagService.updateBlog({ blog_id, tag_ids });
-
     return blogData;
   }
   remove(ids: number[]) {
@@ -54,9 +58,9 @@ export class BlogService
       },
     });
   }
-  async getDetail(id: number) {
+  async getDetail(id: number, blogConditions?: Partial<Blog>) {
     const blogData = await this.prismaService.blog.findUnique({
-      where: { blog_id: id },
+      where: { blog_id: id, ...blogConditions },
       select: {
         blog_id: true,
         blog_title: true,
@@ -64,6 +68,7 @@ export class BlogService
         blog_content: true,
         blog_thumbnail: true,
         blog_reading_time: true,
+        blog_is_publish: true,
         BlogTag: {
           select: {
             Tag: {
@@ -79,6 +84,10 @@ export class BlogService
     if (!blogData) throw new BadRequestException('Blog not found');
     const { BlogTag = [], ...blogDetail } = blogData;
     return { ...blogDetail, Tag: BlogTag.map((item) => item.Tag) };
+  }
+
+  getDetailForUser(id: number) {
+    return this.getDetail(id, { blog_is_publish: true });
   }
 
   getList(getBlogListByPaginationDto: GetBlogListByPaginationDto) {
@@ -107,6 +116,7 @@ export class BlogService
         blog_id: true,
         blog_title: true,
         blog_description: true,
+        blog_is_publish: true,
       },
       skip,
       take: itemPerPage,
@@ -145,6 +155,7 @@ export class BlogService
         blog_id: 'desc',
       },
       where: {
+        blog_is_publish: true,
         OR: [
           {
             BlogTag: {
@@ -217,5 +228,11 @@ export class BlogService
         blog_id,
       },
     });
+  }
+
+  updatePublishBlogStatus(
+    updatePublishBlogStatusDto: UpdatePublishBlogStatusDto
+  ) {
+    return this.updateBlog(updatePublishBlogStatusDto);
   }
 }

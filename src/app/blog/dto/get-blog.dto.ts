@@ -6,3 +6,7 @@ export class GetBlogListByPaginationDto extends IntersectionType(
   PaginationList,
   PartialType(Blog)
 ) {}
+
+export type GetBlogDetail = {
+  [key in keyof Partial<Blog>]: boolean;
+};

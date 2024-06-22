@@ -17,6 +17,7 @@ import { GetBlogListByPaginationDto } from './dto/get-blog.dto';
 import { ParseParamsPaginationPipe } from 'src/common/pipes/parse-params-pagination.pipe';
 import { ParseIntArrayPipe } from 'src/common/pipes/parse-int-array.pipe';
 import {
+  UpdatePublishBlogStatusDto,
   UpdateBlogDto,
   UpdateBlogTrackingInfoDto,
 } from './dto/update-blog.dto';
@@ -49,6 +50,11 @@ export class BlogController {
     return this.blogService.getListForUser(getListByPaginationDto);
   }
 
+  @Get('/:id/for-user')
+  getBlogDetailForUser(@Param('id', ParseIntPipe) id: number) {
+    return this.blogService.getDetailForUser(id);
+  }
+
   @Get(':id')
   getBlogDetail(@Param('id', ParseIntPipe) id: number) {
     return this.blogService.getDetail(id);
@@ -68,5 +74,12 @@ export class BlogController {
       blog_id: id,
       ...updateDto,
     });
+  }
+
+  @Patch('/publish')
+  updatePublishBlogStatus(
+    @Body() updatePublishBlogStatusDto: UpdatePublishBlogStatusDto
+  ) {
+    return this.blogService.updatePublishBlogStatus(updatePublishBlogStatusDto);
   }
 }

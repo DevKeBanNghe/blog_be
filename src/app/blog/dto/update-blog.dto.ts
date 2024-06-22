@@ -9,3 +9,8 @@ export class UpdateBlogTrackingInfoDto extends PickType(UpdateBlogDto, [
   'blog_id',
   'blog_view',
 ]) {}
+
+export class UpdatePublishBlogStatusDto extends PickType(Blog, [
+  'blog_id',
+  'blog_is_publish',
+]) {}

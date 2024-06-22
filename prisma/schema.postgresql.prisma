@@ -23,6 +23,7 @@ model Blog {
   blog_content      String
   blog_view         Int       @default(0)
   blog_reading_time Int       @default(3)
+  blog_is_publish   Boolean   @default(false)
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
   BlogTag           BlogTag[]

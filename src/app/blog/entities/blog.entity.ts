@@ -16,4 +16,5 @@ export class Blog extends BaseEntity implements BlogPrisma {
   @IsNumber()
   blog_view: number;
   blog_reading_time: number;
+  blog_is_publish: boolean;
 }

@@ -1,7 +1,8 @@
 import { IsNumber, IsString } from 'class-validator';
 import { Blog as BlogPrisma } from '@prisma/postgresql_client';
+import { BaseEntity } from 'src/common/entities/base.entity';
 
-export class Blog implements BlogPrisma {
+export class Blog extends BaseEntity implements BlogPrisma {
   @IsNumber()
   blog_id: number;
   @IsString()
@@ -14,6 +15,5 @@ export class Blog implements BlogPrisma {
   blog_thumbnail: string;
   @IsNumber()
   blog_view: number;
-  created_at: Date;
-  updated_at: Date;
+  blog_reading_time: number;
 }

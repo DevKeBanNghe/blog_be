@@ -16,15 +16,16 @@ datasource db {
 }
 
 model Blog {
-  blog_id          Int       @id @default(autoincrement())
-  blog_title       String
-  blog_description String?
-  blog_thumbnail   String?
-  blog_content     String
-  blog_view        Int       @default(0)
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
-  BlogTag          BlogTag[]
+  blog_id           Int       @id @default(autoincrement())
+  blog_title        String
+  blog_description  String?
+  blog_thumbnail    String?
+  blog_content      String
+  blog_view         Int       @default(0)
+  blog_reading_time Int       @default(3)
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  BlogTag           BlogTag[]
 }
 
 model BlogTag {

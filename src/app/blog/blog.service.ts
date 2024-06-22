@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   CreateService,
   DeleteService,
@@ -59,6 +63,7 @@ export class BlogService
         blog_description: true,
         blog_content: true,
         blog_thumbnail: true,
+        blog_reading_time: true,
         BlogTag: {
           select: {
             Tag: {
@@ -132,6 +137,7 @@ export class BlogService
         blog_view: true,
         created_at: true,
         blog_thumbnail: true,
+        blog_reading_time: true,
       },
       skip,
       take: itemPerPage,

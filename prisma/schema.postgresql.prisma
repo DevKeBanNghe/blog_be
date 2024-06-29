@@ -16,7 +16,7 @@ datasource db {
 }
 
 model Blog {
-  blog_id           Int       @id @default(autoincrement())
+  blog_id           String    @id @default(cuid())
   blog_title        String
   blog_description  String?
   blog_thumbnail    String?
@@ -30,26 +30,25 @@ model Blog {
 }
 
 model BlogTag {
-  Blog    Blog @relation(fields: [blog_id], references: [blog_id])
-  blog_id Int
-  Tag     Tag  @relation(fields: [tag_id], references: [tag_id])
-  tag_id  Int
+  Blog    Blog   @relation(fields: [blog_id], references: [blog_id])
+  blog_id String
+  Tag     Tag    @relation(fields: [tag_id], references: [tag_id])
+  tag_id  String
 
   @@id([blog_id, tag_id])
 }
 
 model Tag {
-  tag_id          Int       @id @default(autoincrement())
+  tag_id          String    @id @default(cuid())
   tag_name        String
   tag_description String?
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
-  blog_id         Int?
   BlogTag         BlogTag[]
 }
 
 model Image {
-  image_id          Int      @id @default(autoincrement())
+  image_id          String   @id @default(cuid())
   image_url         String
   image_name        String?
   image_description String?

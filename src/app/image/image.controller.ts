@@ -25,7 +25,7 @@ export class ImageController {
   }
 
   @Delete()
-  deleteImages(@Query('ids', ParseIntArrayPipe) ids: number[]) {
+  deleteImages(@Query('ids') ids: string[]) {
     return this.imageService.remove(ids);
   }
 

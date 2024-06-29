@@ -3,8 +3,8 @@ import { Blog as BlogPrisma } from '@prisma/postgresql_client';
 import { BaseEntity } from 'src/common/entities/base.entity';
 
 export class Blog extends BaseEntity implements BlogPrisma {
-  @IsNumber()
-  blog_id: number;
+  @IsString()
+  blog_id: string;
   @IsString()
   blog_title: string;
   @IsString()

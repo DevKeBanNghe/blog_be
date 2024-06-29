@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Put,
@@ -51,23 +50,23 @@ export class BlogController {
   }
 
   @Get('/:id/for-user')
-  getBlogDetailForUser(@Param('id', ParseIntPipe) id: number) {
+  getBlogDetailForUser(@Param('id') id: string) {
     return this.blogService.getDetailForUser(id);
   }
 
   @Get(':id')
-  getBlogDetail(@Param('id', ParseIntPipe) id: number) {
+  getBlogDetail(@Param('id') id: string) {
     return this.blogService.getDetail(id);
   }
 
   @Delete()
-  deleteBlogs(@Query('ids', ParseIntArrayPipe) ids: number[]) {
+  deleteBlogs(@Query('ids') ids: string[]) {
     return this.blogService.remove(ids);
   }
 
   @Patch('/tracking/:id')
   updateBlogTrackingInfo(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateDto: UpdateBlogTrackingInfoDto
   ) {
     return this.blogService.updateBlogTrackingInfo({

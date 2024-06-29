@@ -9,5 +9,5 @@ export class UpdateTagDto extends IntersectionType(
 ) {}
 
 export class UpdateBlogDto extends PickType(Blog, ['blog_id']) {
-  tag_ids: number[];
+  tag_ids: string[];
 }

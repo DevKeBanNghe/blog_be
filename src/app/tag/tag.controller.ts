@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -14,7 +13,6 @@ import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { GetTagListByPaginationDto, GetTagOptionsDto } from './dto/get-tag.dto';
 import { ParseParamsPaginationPipe } from 'src/common/pipes/parse-params-pagination.pipe';
-import { ParseIntArrayPipe } from 'src/common/pipes/parse-int-array.pipe';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { ParseParamsOptionPipe } from 'src/common/pipes/parse-params-option.pipe';
 
@@ -45,12 +43,12 @@ export class TagController {
   }
 
   @Get(':id')
-  getTagDetail(@Param('id', ParseIntPipe) id: number) {
+  getTagDetail(@Param('id') id: string) {
     return this.tagService.getDetail(id);
   }
 
   @Delete()
-  deleteTags(@Query('ids', ParseIntArrayPipe) ids: number[]) {
+  deleteTags(@Query('ids') ids: string[]) {
     return this.tagService.remove(ids);
   }
 }

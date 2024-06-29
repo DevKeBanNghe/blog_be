@@ -49,7 +49,7 @@ export class BlogService
     await this.tagService.updateBlog({ blog_id, tag_ids });
     return blogData;
   }
-  remove(ids: number[]) {
+  remove(ids: string[]) {
     return this.prismaService.blog.deleteMany({
       where: {
         blog_id: {
@@ -58,7 +58,7 @@ export class BlogService
       },
     });
   }
-  async getDetail(id: number, blogConditions?: Partial<Blog>) {
+  async getDetail(id: string, blogConditions?: Partial<Blog>) {
     const blogData = await this.prismaService.blog.findUnique({
       where: { blog_id: id, ...blogConditions },
       select: {
@@ -86,7 +86,7 @@ export class BlogService
     return { ...blogDetail, Tag: BlogTag.map((item) => item.Tag) };
   }
 
-  getDetailForUser(id: number) {
+  getDetailForUser(id: string) {
     return this.getDetail(id, { blog_is_publish: true });
   }
 

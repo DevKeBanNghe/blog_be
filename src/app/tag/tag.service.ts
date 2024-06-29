@@ -50,7 +50,7 @@ export class TagService
       },
     });
   }
-  remove(ids: number[]) {
+  remove(ids: string[]) {
     return this.prismaService.tag.deleteMany({
       where: {
         tag_id: {
@@ -59,7 +59,7 @@ export class TagService
       },
     });
   }
-  async getDetail(id: number) {
+  async getDetail(id: string) {
     const tag = await this.prismaService.tag.findUnique({
       where: { tag_id: id },
       select: {

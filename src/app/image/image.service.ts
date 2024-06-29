@@ -22,7 +22,7 @@ export class ImageService implements GetAllService, DeleteService {
     private fileUtilService: FileUtilService
   ) {}
 
-  remove(ids: number[]) {
+  remove(ids: string[]) {
     return this.prismaService.image.deleteMany({
       where: {
         image_id: {

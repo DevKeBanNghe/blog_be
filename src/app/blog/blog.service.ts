@@ -110,7 +110,6 @@ export class BlogService
     itemPerPage,
     search = '',
   }: GetBlogListByPaginationDto) {
-    console.log('>>> search', search);
     const skip = (page - 1) * itemPerPage;
     const list = await this.prismaService.blog.findMany({
       select: {

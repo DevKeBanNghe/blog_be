@@ -48,6 +48,7 @@ export class ImageService implements GetAllService, DeleteService {
   async getListByPagination({
     page,
     itemPerPage,
+    search = '',
   }: GetImageListByPaginationDto) {
     const skip = (page - 1) * itemPerPage;
     const list = await this.prismaService.image.findMany({
@@ -61,6 +62,28 @@ export class ImageService implements GetAllService, DeleteService {
       take: itemPerPage,
       orderBy: {
         image_id: 'desc',
+      },
+      where: {
+        OR: [
+          {
+            image_name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            image_url: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            image_description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
       },
     });
 

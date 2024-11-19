@@ -85,7 +85,11 @@ export class TagService
     });
   }
 
-  async getListByPagination({ page, itemPerPage }: GetTagListByPaginationDto) {
+  async getListByPagination({
+    page,
+    itemPerPage,
+    search = '',
+  }: GetTagListByPaginationDto) {
     const skip = (page - 1) * itemPerPage;
     const list = await this.prismaService.tag.findMany({
       select: {
@@ -97,6 +101,22 @@ export class TagService
       take: itemPerPage,
       orderBy: {
         tag_id: 'desc',
+      },
+      where: {
+        OR: [
+          {
+            tag_name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            tag_description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
       },
     });
 

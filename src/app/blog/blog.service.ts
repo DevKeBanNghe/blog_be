@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   CreateService,
   DeleteService,
@@ -109,7 +105,12 @@ export class BlogService
     });
   }
 
-  async getListByPagination({ page, itemPerPage }: GetBlogListByPaginationDto) {
+  async getListByPagination({
+    page,
+    itemPerPage,
+    search = '',
+  }: GetBlogListByPaginationDto) {
+    console.log('>>> search', search);
     const skip = (page - 1) * itemPerPage;
     const list = await this.prismaService.blog.findMany({
       select: {
@@ -122,6 +123,40 @@ export class BlogService
       take: itemPerPage,
       orderBy: {
         blog_id: 'desc',
+      },
+      where: {
+        OR: [
+          {
+            BlogTag: {
+              some: {
+                Tag: {
+                  tag_name: {
+                    contains: search,
+                    mode: 'insensitive',
+                  },
+                },
+              },
+            },
+          },
+          {
+            blog_title: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            blog_description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            blog_content: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
       },
     });
 

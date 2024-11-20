@@ -6,7 +6,7 @@ import {
   GetDetailService,
   UpdateService,
 } from 'src/common/interfaces/service.interface';
-import { CreateBlogDto } from './dto/create-blog.dto';
+import { CreateBlogDto, SubscribeToBlogsDto } from './dto/create-blog.dto';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
 import { GetBlogListByPaginationDto } from './dto/get-blog.dto';
 import { ApiService } from 'src/common/utils/api/api.service';
@@ -235,6 +235,7 @@ export class BlogService
       itemPerPage,
     });
   }
+
   async create({ tag_ids, ...dataCreate }: CreateBlogDto) {
     const blogData = await this.prismaService.blog.create({
       data: {
@@ -268,5 +269,16 @@ export class BlogService
     updatePublishBlogStatusDto: UpdatePublishBlogStatusDto
   ) {
     return this.updateBlog(updatePublishBlogStatusDto);
+  }
+
+  async subscribeToBlogs({ user_email }: SubscribeToBlogsDto) {
+    return 'Subcribe success';
+    // const blogData = await this.prismaService.user.create({
+    //   data: {
+    //     ...dataCreate,
+    //   },
+    // });
+
+    // return blogData;
   }
 }

@@ -7,3 +7,7 @@ export class CreateBlogDto extends IntersectionType(
 ) {
   tag_ids: string[];
 }
+
+export class SubscribeToBlogsDto {
+  user_email: string;
+}

@@ -11,10 +11,9 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
-import { CreateBlogDto } from './dto/create-blog.dto';
+import { CreateBlogDto, SubscribeToBlogsDto } from './dto/create-blog.dto';
 import { GetBlogListByPaginationDto } from './dto/get-blog.dto';
 import { ParseParamsPaginationPipe } from 'src/common/pipes/parse-params-pagination.pipe';
-import { ParseIntArrayPipe } from 'src/common/pipes/parse-int-array.pipe';
 import {
   UpdatePublishBlogStatusDto,
   UpdateBlogDto,
@@ -80,5 +79,10 @@ export class BlogController {
     @Body() updatePublishBlogStatusDto: UpdatePublishBlogStatusDto
   ) {
     return this.blogService.updatePublishBlogStatus(updatePublishBlogStatusDto);
+  }
+
+  @Post('/subscribe')
+  subscribeToBlogs(@Body() subscribeToBlogsDto: SubscribeToBlogsDto) {
+    return this.blogService.subscribeToBlogs(subscribeToBlogsDto);
   }
 }

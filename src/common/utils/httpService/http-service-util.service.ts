@@ -1,36 +1,42 @@
 import { HttpService } from '@nestjs/axios';
-import { HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { EnvVars } from 'src/consts';
+import { Inject, Injectable } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { AxiosInstance } from 'axios';
+import { Request } from 'express';
 import {
   COOKIE_SSO_ACCESS_TOKEN_KEY,
   COOKIE_SSO_REFRESH_TOKEN_KEY,
 } from 'src/consts/cookie.const';
-
 @Injectable()
-export class HttpServiceUtilService implements OnModuleInit {
-  private axios: AxiosInstance;
-  constructor(private readonly httpService: HttpService) {
-    this.axios = this.httpService.axiosRef;
+export class HttpServiceUtilService {
+  private _axios: AxiosInstance;
+  constructor(
+    @Inject(REQUEST) private req: Request,
+    private readonly httpService: HttpService
+  ) {
+    this._axios = this.httpService.axiosRef;
+    this.initConfigAxios();
   }
 
-  onModuleInit() {
-    this.httpService.axiosRef.defaults.withCredentials = true;
-    this.axios.interceptors.response.use(
-      ({ data: data_res, status }) => {
-        return { ...data_res, status };
-      },
-      async ({ response: { data, status } }) => {
-        return { ...data, status };
+  initConfigAxios() {
+    this._axios.defaults.headers['x-webpage-key'] =
+      this.req.headers['x-webpage-key'];
+
+    const token =
+      this.req.cookies[COOKIE_SSO_ACCESS_TOKEN_KEY] ??
+      this.req.cookies[COOKIE_SSO_REFRESH_TOKEN_KEY] ??
+      '';
+    this._axios.defaults.headers['Authorization'] = `Bearer ${token}`;
+
+    this._axios.interceptors.response.use(
+      (res) => res,
+      ({ response: { data, status } }) => {
+        return { data, status };
       }
     );
   }
 
-  get(
-    url: string,
-    options?: AxiosRequestConfig
-  ): Promise<AxiosResponse<any, any> & { [key: string]: any }> {
-    return this.axios.get(url, options);
+  get axios() {
+    return this._axios;
   }
 }

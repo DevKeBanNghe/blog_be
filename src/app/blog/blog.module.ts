@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { BlogController } from './blog.controller';
-import { TagService } from '../tag/tag.service';
+import { SSOModule } from 'src/common/utils/api/sso/sso.module';
+import { TagModule } from '../tag/tag.module';
+import { ExcelUtilModule } from 'src/common/utils/excel/excel-util.module';
 
 @Module({
+  imports: [SSOModule, TagModule, ExcelUtilModule],
   controllers: [BlogController],
-  providers: [BlogService, TagService],
+  providers: [BlogService],
   exports: [BlogService],
 })
 export class BlogModule {}

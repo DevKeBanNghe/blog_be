@@ -5,22 +5,43 @@ import {
 } from 'src/common/interfaces/service.interface';
 import { CreateImageDto } from './dto/create-image.dto';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
-import { GetImageListByPaginationDto } from './dto/get-image.dto';
+import {
+  ExportImagesDto,
+  GetImageListByPaginationDto,
+} from './dto/get-image.dto';
 import { ApiService } from 'src/common/utils/api/api.service';
 import { v2 as cloudinary } from 'cloudinary';
 import { ConfigService } from '@nestjs/config';
 import { CloudinaryEnvs } from 'src/consts';
 import { FileUtilService } from 'src/common/utils/file/file-util.service';
 import { resolve } from 'path';
+import { BaseInstance } from 'src/common/classes/base.class';
+import { isEmpty } from 'lodash';
+import { ExcelUtilService } from 'src/common/utils/excel/excel-util.service';
+import { QueryUtilService } from 'src/common/utils/query/query-util.service';
+import { UpdateActivateStatusDto } from './dto/update-tag.dto';
 
 @Injectable()
-export class ImageService implements GetAllService, DeleteService {
+export class ImageService
+  implements BaseInstance, GetAllService, DeleteService
+{
+  private excelSheets = {
+    Images: 'Images',
+  };
   constructor(
     private prismaService: PrismaService,
     private apiService: ApiService,
     private configService: ConfigService,
-    private fileUtilService: FileUtilService
+    private fileUtilService: FileUtilService,
+    private excelUtilService: ExcelUtilService,
+    private queryUtil: QueryUtilService
   ) {}
+  get instance() {
+    return this.prismaService.image;
+  }
+  get extended() {
+    return this.prismaService.clientExtended.image;
+  }
 
   remove(ids: string[]) {
     return this.prismaService.image.deleteMany({
@@ -41,6 +62,7 @@ export class ImageService implements GetAllService, DeleteService {
       select: {
         image_id: true,
         image_name: true,
+        image_url: true,
       },
     });
   }
@@ -50,46 +72,30 @@ export class ImageService implements GetAllService, DeleteService {
     itemPerPage,
     search = '',
   }: GetImageListByPaginationDto) {
+    const imageFieldsSelect = {
+      image_id: true,
+      image_name: true,
+      image_url: true,
+      image_description: true,
+    };
+    const imageSearchQuery = this.queryUtil.buildSearchQuery({
+      keys: imageFieldsSelect,
+      value: search,
+    });
+
     const skip = (page - 1) * itemPerPage;
-    const list = await this.prismaService.image.findMany({
-      select: {
-        image_id: true,
-        image_url: true,
-        image_name: true,
-        image_description: true,
-      },
+    const list = await this.extended.findMany({
+      select: imageFieldsSelect,
       skip,
       take: itemPerPage,
-      orderBy: {
-        image_id: 'desc',
-      },
       where: {
-        OR: [
-          {
-            image_name: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            image_url: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            image_description: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        ],
+        OR: imageSearchQuery,
       },
     });
 
     return this.apiService.formatPagination<typeof list>({
       list,
-      totalItems: await this.prismaService.image.count(),
+      totalItems: await this.extended.count(),
       page,
       itemPerPage,
     });
@@ -120,6 +126,44 @@ export class ImageService implements GetAllService, DeleteService {
 
     return this.prismaService.image.createMany({
       data: imagesData,
+    });
+  }
+
+  private async getImagesExport({ ids }) {
+    if (isEmpty(ids)) return await this.getAll();
+    return await this.extended.findMany({
+      select: {
+        image_name: true,
+        image_url: true,
+      },
+      where: {
+        image_id: { in: ids },
+      },
+    });
+  }
+
+  async exportImages({ ids }: ExportImagesDto) {
+    const data = await this.getImagesExport({ ids });
+    const dataBuffer = await this.excelUtilService.generateExcel({
+      worksheets: [
+        {
+          sheetName: this.excelSheets.Images,
+          data,
+        },
+      ],
+    });
+
+    return dataBuffer;
+  }
+
+  updateActivateStatus({ image_ids, ...dataUpdate }: UpdateActivateStatusDto) {
+    return this.extended.updateMany({
+      data: dataUpdate,
+      where: {
+        image_id: {
+          in: image_ids,
+        },
+      },
     });
   }
 }

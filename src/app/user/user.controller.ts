@@ -1,19 +1,12 @@
-import { Controller, Get, Res, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Cookies } from 'src/common/decorators/cookies.decorator';
-import { Request, Response } from 'express';
-import {
-  COOKIE_SSO_ACCESS_TOKEN_KEY,
-  COOKIE_SSO_REFRESH_TOKEN_KEY,
-} from 'src/consts/cookie.const';
+import { Request } from 'src/common/interfaces/http.interface';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('/info')
-  async getUserInfo(
-    @Cookies(COOKIE_SSO_ACCESS_TOKEN_KEY) access_token: string
-  ) {
-    return this.userService.getUserInfo({ token: access_token });
+  async getUserInfo(@Req() req: Request) {
+    return req.user;
   }
 }

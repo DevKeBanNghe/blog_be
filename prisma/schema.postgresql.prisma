@@ -4,15 +4,19 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+generator class_validator {
+  provider = "prisma-class-validator-generator"
+  output   = "../generated/prisma/postgresql"
+}
+
 generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/@prisma/postgresql_client"
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("POSTGRES_URL")
-  relationMode = "prisma" // Not using constraint foreign key
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
 }
 
 model Blog {
@@ -23,10 +27,14 @@ model Blog {
   blog_content      String
   blog_view         Int       @default(0)
   blog_reading_time Int       @default(3)
-  blog_is_publish   Boolean   @default(false)
+  blog_is_publish   Int       @default(0)
   created_at        DateTime  @default(now())
+  created_by        String?
   updated_at        DateTime  @updatedAt
-  BlogTag           BlogTag[]
+  updated_by        String?
+  deleted_at        DateTime?
+  is_active         Int       @default(1)
+  tags              BlogTag[]
 }
 
 model BlogTag {
@@ -43,15 +51,23 @@ model Tag {
   tag_name        String
   tag_description String?
   created_at      DateTime  @default(now())
+  created_by      String?
   updated_at      DateTime  @updatedAt
-  BlogTag         BlogTag[]
+  updated_by      String?
+  deleted_at      DateTime?
+  is_active       Int       @default(1)
+  blogs           BlogTag[]
 }
 
 model Image {
-  image_id          String   @id @default(cuid())
+  image_id          String    @id @default(cuid())
   image_url         String
   image_name        String?
   image_description String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
+  created_at        DateTime  @default(now())
+  created_by        String?
+  updated_at        DateTime  @updatedAt
+  updated_by        String?
+  deleted_at        DateTime?
+  is_active         Int       @default(1)
 }

@@ -40,3 +40,7 @@ export enum CloudinaryEnvs {
   CLOUDINARY_API_KEY = 'CLOUDINARY_API_KEY',
   CLOUDINARY_API_SECRET = 'CLOUDINARY_API_SECRET',
 }
+
+export enum MulterEnvs {
+  MULTER_DEST_FILE = 'MULTER_DEST_FILE',
+}

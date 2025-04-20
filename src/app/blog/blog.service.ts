@@ -6,34 +6,59 @@ import {
   GetDetailService,
   UpdateService,
 } from 'src/common/interfaces/service.interface';
-import { CreateBlogDto, SubscribeToBlogsDto } from './dto/create-blog.dto';
+import {
+  CreateBlogDto,
+  ImportBlogsDto,
+  SubscribeToBlogsDto,
+} from './dto/create-blog.dto';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
-import { GetBlogListByPaginationDto } from './dto/get-blog.dto';
+import { ExportBlogsDto, GetBlogListByPaginationDto } from './dto/get-blog.dto';
 import { ApiService } from 'src/common/utils/api/api.service';
 import {
   UpdatePublishBlogStatusDto,
   UpdateBlogDto,
   UpdateBlogTrackingInfoDto,
+  UpdateActivateStatusDto,
 } from './dto/update-blog.dto';
 import { TagService } from '../tag/tag.service';
-import { Blog } from './entities/blog.entity';
+import { SSOService } from 'src/common/utils/api/sso/sso.service';
+import { Blog } from '@prisma-postgresql/models';
+import { BaseInstance } from 'src/common/classes/base.class';
+import { isEmpty, isEqual, omit, uniqWith } from 'lodash';
+import { ExcelUtilService } from 'src/common/utils/excel/excel-util.service';
+import { QueryUtilService } from 'src/common/utils/query/query-util.service';
 @Injectable()
 export class BlogService
   implements
+    BaseInstance,
     CreateService<CreateBlogDto>,
     GetAllService,
     GetDetailService,
     DeleteService,
     UpdateService<UpdateBlogDto>
 {
+  private excelSheets = {
+    Blogs: 'Blogs',
+  };
   constructor(
     private prismaService: PrismaService,
     private apiService: ApiService,
-    private tagService: TagService
+    private tagService: TagService,
+    private ssoService: SSOService,
+    private excelUtilService: ExcelUtilService,
+    private queryUtil: QueryUtilService
   ) {}
 
+  get instance() {
+    return this.prismaService.blog;
+  }
+
+  get extended() {
+    return this.prismaService.clientExtended.blog;
+  }
+
   private updateBlog({ blog_id, ...dataUpdate }: UpdateBlogDto) {
-    return this.prismaService.blog.update({
+    return this.extended.update({
       data: dataUpdate,
       where: {
         blog_id,
@@ -54,7 +79,7 @@ export class BlogService
       },
     });
   }
-  async getDetail(id: string, blogConditions?: Partial<Blog>) {
+  async getDetail(id: string, blogConditions?: Partial<Omit<Blog, 'tags'>>) {
     const blogData = await this.prismaService.blog.findUnique({
       where: { blog_id: id, ...blogConditions },
       select: {
@@ -65,7 +90,7 @@ export class BlogService
         blog_thumbnail: true,
         blog_reading_time: true,
         blog_is_publish: true,
-        BlogTag: {
+        tags: {
           select: {
             Tag: {
               select: {
@@ -78,12 +103,12 @@ export class BlogService
       },
     });
     if (!blogData) throw new BadRequestException('Blog not found');
-    const { BlogTag = [], ...blogDetail } = blogData;
-    return { ...blogDetail, Tag: BlogTag.map((item) => item.Tag) };
+    const { tags = [], ...blogDetail } = blogData;
+    return { ...blogDetail, Tag: tags.map((item) => item.Tag) };
   }
 
   getDetailForUser(id: string) {
-    return this.getDetail(id, { blog_is_publish: true });
+    return this.getDetail(id, { blog_is_publish: 1 });
   }
 
   getList(getBlogListByPaginationDto: GetBlogListByPaginationDto) {
@@ -110,8 +135,19 @@ export class BlogService
     itemPerPage,
     search = '',
   }: GetBlogListByPaginationDto) {
+    const blogFieldsSelect = {
+      blog_id: true,
+      blog_title: true,
+      blog_description: true,
+      blog_content: true,
+    };
+    const blogSearchQuery = this.queryUtil.buildSearchQuery({
+      keys: blogFieldsSelect,
+      value: search,
+    });
+
     const skip = (page - 1) * itemPerPage;
-    const list = await this.prismaService.blog.findMany({
+    const list = await this.extended.findMany({
       select: {
         blog_id: true,
         blog_title: true,
@@ -120,13 +156,10 @@ export class BlogService
       },
       skip,
       take: itemPerPage,
-      orderBy: {
-        blog_id: 'desc',
-      },
       where: {
         OR: [
           {
-            BlogTag: {
+            tags: {
               some: {
                 Tag: {
                   tag_name: {
@@ -137,31 +170,14 @@ export class BlogService
               },
             },
           },
-          {
-            blog_title: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            blog_description: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            blog_content: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
+          ...blogSearchQuery,
         ],
       },
     });
 
     return this.apiService.formatPagination<typeof list>({
       list,
-      totalItems: await this.prismaService.blog.count(),
+      totalItems: await this.extended.count(),
       page,
       itemPerPage,
     });
@@ -172,27 +188,32 @@ export class BlogService
     itemPerPage,
     search = '',
   }: GetBlogListByPaginationDto) {
+    const blogFieldsSelect = {
+      blog_id: true,
+      blog_title: true,
+      blog_description: true,
+      blog_content: true,
+    };
+    const blogSearchQuery = this.queryUtil.buildSearchQuery({
+      keys: blogFieldsSelect,
+      value: search,
+    });
+
     const skip = (page - 1) * itemPerPage;
-    const list = await this.prismaService.blog.findMany({
+    const list = await this.extended.findMany({
       select: {
-        blog_id: true,
-        blog_title: true,
-        blog_description: true,
         blog_view: true,
-        created_at: true,
         blog_thumbnail: true,
         blog_reading_time: true,
+        ...omit(blogFieldsSelect, ['blog_content']),
       },
       skip,
       take: itemPerPage,
-      orderBy: {
-        blog_id: 'desc',
-      },
       where: {
-        blog_is_publish: true,
+        blog_is_publish: 1,
         OR: [
           {
-            BlogTag: {
+            tags: {
               some: {
                 Tag: {
                   tag_name: {
@@ -203,41 +224,20 @@ export class BlogService
               },
             },
           },
-          {
-            blog_title: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            blog_description: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            blog_content: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
+          ...blogSearchQuery,
         ],
       },
     });
-    const listData = list.map((item) => ({
-      ...item,
-      created_at: item.created_at.toLocaleDateString('en-GB'),
-    }));
-    return this.apiService.formatPagination<typeof listData>({
-      list: listData,
-      totalItems: await this.prismaService.blog.count(),
+    return this.apiService.formatPagination<typeof list>({
+      list,
+      totalItems: await this.extended.count(),
       page,
       itemPerPage,
     });
   }
 
   async create({ tag_ids, ...dataCreate }: CreateBlogDto) {
-    const blogData = await this.prismaService.blog.create({
+    const blogData = await this.extended.create({
       data: {
         ...dataCreate,
       },
@@ -272,13 +272,65 @@ export class BlogService
   }
 
   async subscribeToBlogs({ user_email }: SubscribeToBlogsDto) {
-    return 'Subcribe success';
-    // const blogData = await this.prismaService.user.create({
-    //   data: {
-    //     ...dataCreate,
-    //   },
-    // });
+    const {
+      data: { data, errors },
+    } = await this.ssoService.subscribeUser({
+      user_email,
+    });
+    if (errors) throw new BadRequestException(errors);
+    return data;
+  }
 
-    // return blogData;
+  private async getBlogsExport({ ids }) {
+    if (isEmpty(ids)) return await this.getAll();
+    return await this.extended.findMany({
+      select: {
+        blog_title: true,
+        blog_content: true,
+      },
+      where: {
+        blog_id: { in: ids },
+      },
+    });
+  }
+
+  async exportBlogs({ ids }: ExportBlogsDto) {
+    const data = await this.getBlogsExport({ ids });
+    const dataBuffer = await this.excelUtilService.generateExcel({
+      worksheets: [
+        {
+          sheetName: this.excelSheets.Blogs,
+          data,
+        },
+      ],
+    });
+
+    return dataBuffer;
+  }
+
+  async importBlogs({ file, user }: ImportBlogsDto) {
+    const dataCreated = await this.excelUtilService.read({ file });
+    if (isEmpty(dataCreated))
+      throw new BadRequestException('Import Blogs failed!');
+    const data = await this.extended.createMany({
+      data: uniqWith<Blog>(dataCreated[this.excelSheets.Blogs], isEqual).map(
+        (item) => ({
+          ...item,
+          user,
+        })
+      ),
+    });
+    return data;
+  }
+
+  updateActivateStatus({ blog_ids, ...dataUpdate }: UpdateActivateStatusDto) {
+    return this.extended.updateMany({
+      data: dataUpdate,
+      where: {
+        blog_id: {
+          in: blog_ids,
+        },
+      },
+    });
   }
 }

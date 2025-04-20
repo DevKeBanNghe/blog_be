@@ -1,12 +1,18 @@
-import { IntersectionType, PartialType, PickType } from '@nestjs/mapped-types';
+import { IntersectionType, PartialType } from '@nestjs/mapped-types';
+import { Blog } from '@prisma-postgresql/models';
 import { PaginationList } from 'src/common/classes/pagination-list.class';
-import { Blog } from '../entities/blog.entity';
 
-export class GetBlogListByPaginationDto extends IntersectionType(
+class GetBlogListByPaginationDto extends IntersectionType(
   PaginationList,
   PartialType(Blog)
 ) {}
 
-export type GetBlogDetail = {
+type GetBlogDetail = {
   [key in keyof Partial<Blog>]: boolean;
 };
+
+class ExportBlogsDto {
+  ids: Blog['blog_id'][];
+}
+
+export { GetBlogListByPaginationDto, GetBlogDetail, ExportBlogsDto };

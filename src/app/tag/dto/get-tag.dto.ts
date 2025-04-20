@@ -1,14 +1,20 @@
-import { IntersectionType, PartialType, PickType } from '@nestjs/mapped-types';
+import { IntersectionType, PartialType } from '@nestjs/mapped-types';
 import { PaginationList } from 'src/common/classes/pagination-list.class';
-import { Tag } from '../entities/tag.entity';
 import { OptionParams } from 'src/common/classes/option.class';
+import { Tag } from '@prisma-postgresql/models';
 
-export class GetTagListByPaginationDto extends IntersectionType(
+class GetTagListByPaginationDto extends IntersectionType(
   PaginationList,
   PartialType(Tag)
 ) {}
 
-export class GetTagOptionsDto extends IntersectionType(
+class GetTagOptionsDto extends IntersectionType(
   OptionParams,
   PartialType(Tag)
 ) {}
+
+class ExportTagsDto {
+  ids: Tag['tag_id'][];
+}
+
+export { GetTagListByPaginationDto, GetTagOptionsDto, ExportTagsDto };

@@ -1,17 +1,16 @@
 version: ${VERSION}
 
 services:
-  pg1:
-    container_name: pg1_blog
+  pg_master_blog:
+    container_name: pg_master_blog
     build:
       context: .
     volumes:
-      - ${PATH_BACKUP_DATA}/pg1:/var/lib/postgresql/data
+      - ${PATH_BACKUP_DATA}/pg_master_blog:/var/lib/postgresql/data
     environment:
       - POSTGRES_MASTER=true
     ports:
       - ${PG_MASTER_PORT}:5432
-
   # pg2:
   #   container_name: pg2
   #   build:

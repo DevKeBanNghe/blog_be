@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import ms from 'ms';
-import _ from 'lodash';
+import { lowerCase } from 'lodash';
 import { genSalt, compare, hash } from 'bcryptjs';
 
 @Injectable()
 export class StringUtilService {
-  private readonly algorithm = 'aes-256-cbc';
-  private readonly key = crypto.randomBytes(32);
-  private readonly iv = crypto.randomBytes(16);
+  private readonly algorithm: crypto.CipherCCMTypes = 'aes-256-ccm';
+  private readonly key = crypto.randomBytes(32) as crypto.CipherKey;
+  private readonly iv = crypto.randomBytes(16) as crypto.BinaryLike;
+
   toArray(str: string, split_with: string | RegExp = ',') {
     return str.split(split_with);
   }
 
-  genRandom(length = 6): string {
+  random(length = 6): string {
     return crypto
       .randomBytes(Math.ceil(length / 2))
       .toString('hex')
@@ -38,7 +39,7 @@ export class StringUtilService {
       data = {
         ...data,
         createdAt: Date.now(),
-        expiresIn: _.isString(expiresIn) ? this.toMS(expiresIn) : expiresIn,
+        expiresIn: typeof expiresIn === 'string' ? ms(expiresIn) : expiresIn,
       };
     const cipher = crypto.createCipheriv(this.algorithm, this.key, this.iv);
     const encrypted = cipher
@@ -60,5 +61,13 @@ export class StringUtilService {
       throw new Error('Data encrypt has expired');
 
     return data;
+  }
+
+  convertToField(value) {
+    return lowerCase(value).split(' ').join('_');
+  }
+
+  removeSpace(value) {
+    return value.replace(/\s+/g, '_');
   }
 }

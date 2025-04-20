@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   Post,
+  Put,
   Query,
   UploadedFiles,
   UseInterceptors,
@@ -11,8 +13,10 @@ import {
 import { ImageService } from './image.service';
 import { GetImageListByPaginationDto } from './dto/get-image.dto';
 import { ParseParamsPaginationPipe } from 'src/common/pipes/parse-params-pagination.pipe';
-import { ParseIntArrayPipe } from 'src/common/pipes/parse-int-array.pipe';
-import { FilesStorageInterceptor } from './interceptors/files-storage.interceptor';
+import { ExcelResponseInterceptor } from 'src/common/interceptors/excel-response.interceptor';
+import { Image } from '@prisma-postgresql/models';
+import { UpdateActivateStatusDto } from './dto/update-tag.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('images')
 export class ImageController {
@@ -24,13 +28,25 @@ export class ImageController {
     return this.imageService.getList(getListByPaginationDto);
   }
 
+  @Get('export')
+  @UseInterceptors(ExcelResponseInterceptor)
+  async exportImages(@Query('ids') ids: Image['image_id'][]) {
+    const data = await this.imageService.exportImages({ ids });
+    return data;
+  }
+
+  @Put('activate-status')
+  updateActivateStatus(@Body() payload: UpdateActivateStatusDto) {
+    return this.imageService.updateActivateStatus(payload);
+  }
+
   @Delete()
   deleteImages(@Query('ids') ids: string[]) {
     return this.imageService.remove(ids);
   }
 
   @Post('/upload')
-  @UseInterceptors(FilesStorageInterceptor)
+  @UseInterceptors(FilesInterceptor('files'))
   uploadImages(@UploadedFiles() files) {
     return this.imageService.upload(files);
   }

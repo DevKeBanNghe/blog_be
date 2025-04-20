@@ -8,6 +8,9 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  UploadedFile,
+  UseInterceptors,
   UsePipes,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
@@ -18,7 +21,11 @@ import {
   UpdatePublishBlogStatusDto,
   UpdateBlogDto,
   UpdateBlogTrackingInfoDto,
+  UpdateActivateStatusDto,
 } from './dto/update-blog.dto';
+import { ExcelResponseInterceptor } from 'src/common/interceptors/excel-response.interceptor';
+import { Blog } from '@prisma-postgresql/models';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('blogs')
 export class BlogController {
@@ -27,6 +34,24 @@ export class BlogController {
   @Post()
   createBlog(@Body() createDto: CreateBlogDto) {
     return this.blogService.create(createDto);
+  }
+
+  @Get('export')
+  @UseInterceptors(ExcelResponseInterceptor)
+  async exportBlogs(@Query('ids') ids: Blog['blog_id'][]) {
+    const data = await this.blogService.exportBlogs({ ids });
+    return data;
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  importBlogs(@UploadedFile() file, @Req() req) {
+    return this.blogService.importBlogs({ file, user: req.user });
+  }
+
+  @Put('activate-status')
+  updateActivateStatus(@Body() payload: UpdateActivateStatusDto) {
+    return this.blogService.updateActivateStatus(payload);
   }
 
   @Put()

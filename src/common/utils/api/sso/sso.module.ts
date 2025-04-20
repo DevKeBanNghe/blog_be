@@ -1,9 +1,10 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { SSOService } from './sso.service';
 import { ConfigService } from '@nestjs/config';
+import { HttpServiceUtilModule } from '../../httpService/http-service-util.module';
 
-@Global()
 @Module({
+  imports: [HttpServiceUtilModule],
   providers: [SSOService, ConfigService],
   exports: [SSOService],
 })

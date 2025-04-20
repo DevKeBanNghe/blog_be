@@ -17,20 +17,11 @@ export class ApiService {
     if (indexQuery < 0) return path;
     return path.slice(0, indexQuery);
   }
-  isPathNotAuth(path: string) {
-    path = this.removeQueryParameters(path);
-    return PATHS_NOT_AUTH.includes(
-      path.replace(this.configService.get(EnvVars.SERVER_PREFIX), '')
-    );
-  }
 
-  isPathNotCheckPermission(path: string) {
-    path = this.removeQueryParameters(path);
-    return (
-      this.isPathNotAuth(path) ||
-      PATHS_NOT_CHECK_PERMISSION.includes(
-        path.replace(this.configService.get(EnvVars.SERVER_PREFIX), '')
-      )
+  isPathNotAuth({ originalUrl }) {
+    const rootPath = this.removeQueryParameters(originalUrl);
+    return [...PATHS_NOT_AUTH, ...PATHS_NOT_CHECK_PERMISSION].includes(
+      rootPath.replace(this.configService.get(EnvVars.SERVER_PREFIX), '')
     );
   }
 

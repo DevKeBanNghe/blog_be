@@ -1,9 +1,14 @@
 import { IntersectionType, PartialType, PickType } from '@nestjs/mapped-types';
-import { Tag } from '../entities/tag.entity';
-import { Blog } from 'src/app/blog/entities/blog.entity';
+import { OmitType } from '@nestjs/swagger';
+import { Blog, Tag } from '@prisma-postgresql/models';
+import { ImportExcel } from 'src/common/classes/base.class';
 
-export class CreateTagDto extends IntersectionType(
+class CreateTagDto extends IntersectionType(
   PickType(Tag, ['tag_name']),
-  PartialType(Tag),
+  PartialType(OmitType(Tag, ['blogs'])),
   PickType(PartialType(Blog), ['blog_id'])
 ) {}
+
+class ImportTagsDto extends ImportExcel {}
+
+export { CreateTagDto, ImportTagsDto };

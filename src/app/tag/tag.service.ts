@@ -7,15 +7,29 @@ import {
   GetOptionsService,
   UpdateService,
 } from 'src/common/interfaces/service.interface';
-import { CreateTagDto } from './dto/create-tag.dto';
+import { CreateTagDto, ImportTagsDto } from './dto/create-tag.dto';
 import { PrismaService } from 'src/common/db/prisma/prisma.service';
-import { GetTagListByPaginationDto, GetTagOptionsDto } from './dto/get-tag.dto';
+import {
+  ExportTagsDto,
+  GetTagListByPaginationDto,
+  GetTagOptionsDto,
+} from './dto/get-tag.dto';
 import { ApiService } from 'src/common/utils/api/api.service';
-import { UpdateBlogDto, UpdateTagDto } from './dto/update-tag.dto';
+import {
+  UpdateActivateStatusDto,
+  UpdateBlogDto,
+  UpdateTagDto,
+} from './dto/update-tag.dto';
+import { BaseInstance } from 'src/common/classes/base.class';
+import { isEmpty, isEqual, uniqWith } from 'lodash';
+import { ExcelUtilService } from 'src/common/utils/excel/excel-util.service';
+import { Tag } from '@prisma-postgresql/models';
+import { QueryUtilService } from 'src/common/utils/query/query-util.service';
 
 @Injectable()
 export class TagService
   implements
+    BaseInstance,
     CreateService<CreateTagDto>,
     GetAllService,
     GetDetailService,
@@ -23,10 +37,21 @@ export class TagService
     UpdateService<UpdateTagDto>,
     GetOptionsService<GetTagOptionsDto>
 {
+  private excelSheets = {
+    Tags: 'Tags',
+  };
   constructor(
     private prismaService: PrismaService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private excelUtilService: ExcelUtilService,
+    private queryUtil: QueryUtilService
   ) {}
+  get instance() {
+    return this.prismaService.tag;
+  }
+  get extended() {
+    return this.prismaService.clientExtended.tag;
+  }
   getOptions(getOptionsDto?: GetTagOptionsDto) {
     return this.prismaService.tag.findMany({
       select: {
@@ -43,7 +68,7 @@ export class TagService
     });
   }
   update({ tag_id, ...dataUpdate }: UpdateTagDto) {
-    return this.prismaService.tag.update({
+    return this.extended.update({
       data: dataUpdate,
       where: {
         tag_id,
@@ -90,45 +115,35 @@ export class TagService
     itemPerPage,
     search = '',
   }: GetTagListByPaginationDto) {
+    const tagFieldsSelect = {
+      tag_id: true,
+      tag_name: true,
+      tag_description: true,
+    };
+    const tagSearchQuery = this.queryUtil.buildSearchQuery({
+      keys: tagFieldsSelect,
+      value: search,
+    });
+
     const skip = (page - 1) * itemPerPage;
-    const list = await this.prismaService.tag.findMany({
-      select: {
-        tag_id: true,
-        tag_name: true,
-        tag_description: true,
-      },
+    const list = await this.extended.findMany({
+      select: tagFieldsSelect,
       skip,
       take: itemPerPage,
-      orderBy: {
-        tag_id: 'desc',
-      },
       where: {
-        OR: [
-          {
-            tag_name: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-          {
-            tag_description: {
-              contains: search,
-              mode: 'insensitive',
-            },
-          },
-        ],
+        OR: tagSearchQuery,
       },
     });
 
     return this.apiService.formatPagination<typeof list>({
       list,
-      totalItems: await this.prismaService.tag.count(),
+      totalItems: await this.extended.count(),
       page,
       itemPerPage,
     });
   }
   create(createDto: CreateTagDto) {
-    return this.prismaService.tag.create({
+    return this.extended.create({
       data: {
         ...createDto,
       },
@@ -136,11 +151,11 @@ export class TagService
   }
 
   async updateBlog({ blog_id, tag_ids = [] }: UpdateBlogDto) {
-    await this.prismaService.blogTag.deleteMany({
+    await this.prismaService.clientExtended.blogTag.deleteMany({
       where: { blog_id, tag_id: { notIn: tag_ids } },
     });
     for (const tag_id of tag_ids) {
-      await this.prismaService.blogTag.upsert({
+      await this.prismaService.clientExtended.blogTag.upsert({
         create: {
           blog_id,
           tag_id,
@@ -159,5 +174,57 @@ export class TagService
     }
 
     return {};
+  }
+
+  private async getTagsExport({ ids }) {
+    if (isEmpty(ids)) return await this.getAll();
+    return await this.extended.findMany({
+      select: {
+        tag_name: true,
+      },
+      where: {
+        tag_id: { in: ids },
+      },
+    });
+  }
+
+  async exportTags({ ids }: ExportTagsDto) {
+    const data = await this.getTagsExport({ ids });
+    const dataBuffer = await this.excelUtilService.generateExcel({
+      worksheets: [
+        {
+          sheetName: this.excelSheets.Tags,
+          data,
+        },
+      ],
+    });
+
+    return dataBuffer;
+  }
+
+  async importTags({ file, user }: ImportTagsDto) {
+    const dataCreated = await this.excelUtilService.read({ file });
+    if (isEmpty(dataCreated))
+      throw new BadRequestException('Import Tags failed!');
+    const data = await this.extended.createMany({
+      data: uniqWith<Tag>(dataCreated[this.excelSheets.Tags], isEqual).map(
+        (item) => ({
+          ...item,
+          user,
+        })
+      ),
+    });
+    return data;
+  }
+
+  updateActivateStatus({ tag_ids, ...dataUpdate }: UpdateActivateStatusDto) {
+    return this.extended.updateMany({
+      data: dataUpdate,
+      where: {
+        tag_id: {
+          in: tag_ids,
+        },
+      },
+    });
   }
 }

@@ -6,3 +6,5 @@ Dockerfile
 logs
 *.prisma
 .vscode/*
+generated
+uploads

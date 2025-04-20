@@ -7,5 +7,6 @@ import { SSOModule } from 'src/common/utils/api/sso/sso.module';
   imports: [SSOModule],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -1,7 +1,9 @@
 import { IntersectionType, PartialType, PickType } from '@nestjs/mapped-types';
-import { Image } from '../entities/image.entity';
+import { Image } from '@prisma-postgresql/models';
 
-export class CreateImageDto extends IntersectionType(
+class CreateImageDto extends IntersectionType(
   PickType(Image, ['image_url']),
   PartialType(Image)
 ) {}
+
+export { CreateImageDto };

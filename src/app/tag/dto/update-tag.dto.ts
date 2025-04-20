@@ -1,13 +1,20 @@
 import { IntersectionType, PartialType, PickType } from '@nestjs/mapped-types';
-import { Tag } from '../entities/tag.entity';
 import { CreateTagDto } from './create-tag.dto';
-import { Blog } from 'src/app/blog/entities/blog.entity';
+import { Blog, Tag } from '@prisma-postgresql/models';
 
-export class UpdateTagDto extends IntersectionType(
+class UpdateTagDto extends IntersectionType(
   PickType(Tag, ['tag_id']),
   PartialType(CreateTagDto)
 ) {}
 
-export class UpdateBlogDto extends PickType(Blog, ['blog_id']) {
+class UpdateBlogDto extends PickType(Blog, ['blog_id']) {
   tag_ids: string[];
 }
+
+class UpdateActivateStatusDto extends IntersectionType(
+  PickType(Tag, ['is_active'])
+) {
+  tag_ids: Tag['tag_id'][];
+}
+
+export { UpdateTagDto, UpdateBlogDto, UpdateActivateStatusDto };

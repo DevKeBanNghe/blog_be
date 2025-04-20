@@ -16,7 +16,8 @@ async function bootstrap() {
   Logger.log(
     `🚀 Application is running on: ${configService.get(
       EnvVars.APP_URL
-    )} (${configService.get(EnvVars.NODE_ENV)})`
+    )} (${configService.get(EnvVars.NODE_ENV)})`,
+    `Start ${configService.get(EnvVars.APP_NAME)}`
   );
 }
 

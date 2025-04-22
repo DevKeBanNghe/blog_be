@@ -10,6 +10,7 @@ import { Request, Response } from 'express';
 import {
   COOKIE_SSO_ACCESS_TOKEN_KEY,
   COOKIE_SSO_REFRESH_TOKEN_KEY,
+  cookieConfigsDefault,
 } from 'src/consts/cookie.const';
 
 @Injectable()
@@ -18,13 +19,17 @@ export class SaveTokenInterceptor implements NestInterceptor {
 
   setTokenToCookie(res: Response, { access_token, refresh_token }) {
     if (access_token)
-      res.cookie(COOKIE_SSO_ACCESS_TOKEN_KEY, access_token, {
-        httpOnly: true,
-      });
+      res.cookie(
+        COOKIE_SSO_ACCESS_TOKEN_KEY,
+        access_token,
+        cookieConfigsDefault
+      );
     if (refresh_token)
-      res.cookie(COOKIE_SSO_REFRESH_TOKEN_KEY, refresh_token, {
-        httpOnly: true,
-      });
+      res.cookie(
+        COOKIE_SSO_REFRESH_TOKEN_KEY,
+        refresh_token,
+        cookieConfigsDefault
+      );
   }
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const { getRequest, getResponse } = context.switchToHttp();

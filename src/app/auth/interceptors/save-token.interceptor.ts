@@ -7,29 +7,23 @@ import {
 import { map, Observable } from 'rxjs';
 import { StringUtilService } from 'src/common/utils/string/string-util.service';
 import { Request, Response } from 'express';
-import {
-  COOKIE_SSO_ACCESS_TOKEN_KEY,
-  COOKIE_SSO_REFRESH_TOKEN_KEY,
-  cookieConfigsDefault,
-} from 'src/consts/cookie.const';
+import { cookieConfigsDefault } from 'src/consts/cookie.const';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class SaveTokenInterceptor implements NestInterceptor {
-  constructor(protected stringUtilService: StringUtilService) {}
+  constructor(
+    protected stringUtilService: StringUtilService,
+    private authService: AuthService
+  ) {}
 
-  setTokenToCookie(res: Response, { access_token, refresh_token }) {
+  async setTokenToCookie(res: Response, { access_token, refresh_token }) {
+    const cookieKeys = await this.authService.getCookieKeys();
+    const { access_token_key, refresh_token_key } = cookieKeys;
     if (access_token)
-      res.cookie(
-        COOKIE_SSO_ACCESS_TOKEN_KEY,
-        access_token,
-        cookieConfigsDefault
-      );
+      res.cookie(access_token_key, access_token, cookieConfigsDefault);
     if (refresh_token)
-      res.cookie(
-        COOKIE_SSO_REFRESH_TOKEN_KEY,
-        refresh_token,
-        cookieConfigsDefault
-      );
+      res.cookie(refresh_token_key, refresh_token, cookieConfigsDefault);
   }
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const { getRequest, getResponse } = context.switchToHttp();

@@ -21,9 +21,10 @@ export class SSOService {
     return data;
   }
 
-  async refreshToken() {
+  async refreshToken(params = {}) {
     const data = await this.httpServiceUtilService.axios.get(
-      `${this.url}/auth/refresh-token`
+      `${this.url}/auth/refresh-token`,
+      { params }
     );
     return data;
   }

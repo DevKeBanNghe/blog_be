@@ -1,4 +1,4 @@
-import { Controller, Get, Res, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Query, Res, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SaveTokenInterceptor } from './interceptors/save-token.interceptor';
 import { Response } from 'express';
@@ -8,8 +8,8 @@ export class AuthController {
 
   @Get('/refresh-token')
   @UseInterceptors(SaveTokenInterceptor)
-  async refreshToken() {
-    return await this.authService.refreshToken();
+  async refreshToken(@Query('user_id') user_id: string) {
+    return await this.authService.refreshToken({ user_id });
   }
 
   @Get('logout')

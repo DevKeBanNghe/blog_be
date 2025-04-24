@@ -5,10 +5,10 @@ import { SSOService } from 'src/common/utils/api/sso/sso.service';
 export class AuthService {
   constructor(private ssoService: SSOService) {}
 
-  async refreshToken() {
+  async refreshToken(params = {}) {
     const {
       data: { data, errors },
-    } = await this.ssoService.refreshToken();
+    } = await this.ssoService.refreshToken(params);
     if (errors) throw new InternalServerErrorException(errors);
     return data;
   }

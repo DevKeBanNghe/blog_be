@@ -12,7 +12,10 @@ export const initApp = async (app: INestApplication) => {
     defaultVersion: configService.get(EnvVars.API_VERSION),
   });
   app.enableCors({
-    origin: [configService.get(EnvVars.FE_URL)],
+    origin: [
+      configService.get(EnvVars.FE_URL),
+      configService.get(EnvVars.SSO_BE_URL),
+    ],
     credentials: true,
   });
 

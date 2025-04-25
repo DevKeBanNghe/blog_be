@@ -3,14 +3,10 @@ import { Workbook } from 'exceljs';
 import { GenerateExcelParams } from './interfaces/excel-util.interface';
 import { StringUtilService } from '../string/string-util.service';
 import { isEmpty, startCase, uniq } from 'lodash';
-import { HttpServiceUtilService } from '../httpService/http-service-util.service';
 
 @Injectable()
 export class ExcelUtilService {
-  constructor(
-    private stringUtilService: StringUtilService,
-    private httpServiceUtilService: HttpServiceUtilService
-  ) {}
+  constructor(private stringUtilService: StringUtilService) {}
 
   private customHeaders({ worksheet }) {
     const headerRow = worksheet.getRow(1);

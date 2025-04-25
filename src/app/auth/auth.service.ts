@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { SSOService } from 'src/common/utils/api/sso/sso.service';
 
 @Injectable()
@@ -8,8 +13,13 @@ export class AuthService {
   async refreshToken(params = {}) {
     const {
       data: { data, errors },
+      status,
     } = await this.ssoService.refreshToken(params);
-    if (errors) throw new InternalServerErrorException(errors);
+    const ExceptionClass =
+      status === HttpStatus.UNAUTHORIZED
+        ? UnauthorizedException
+        : InternalServerErrorException;
+    if (errors) throw new ExceptionClass(errors);
     return data;
   }
 

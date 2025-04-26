@@ -31,7 +31,8 @@ export class SaveTokenInterceptor implements NestInterceptor {
     const res = getResponse<Response>();
     return next.handle().pipe(
       map((data) => {
-        this.setTokenToCookie(res, data);
+        if (data?.access_token || data?.refresh_token)
+          this.setTokenToCookie(res, data);
         return data;
       })
     );

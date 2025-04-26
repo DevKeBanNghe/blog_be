@@ -20,31 +20,37 @@ export class SSOService {
     private httpServiceUtilService: HttpServiceUtilService
   ) {
     this.url = this.configService.get(EnvVars.SSO_BE_URL);
-    this.axios = this.initConfigAxiosSSO();
-    this.getCookieKeys().then(({ data: { data, errors } }) => {
-      if (errors) throw new InternalServerErrorException(errors);
-      const { access_token_key, refresh_token_key } = data;
-      const token =
-        this.req.cookies[access_token_key] ??
-        this.req.cookies[refresh_token_key] ??
-        '';
-      this.axios.defaults.headers['Authorization'] = `Bearer ${token}`;
-    });
+    this.axios = this.httpServiceUtilService.axios;
+    this.initCookieConfig();
+    this.initConfigAxiosSSO();
+  }
+
+  async initCookieConfig() {
+    const { data: { data, errors } = {} } = await this.getCookieKeys();
+    if (errors) throw new InternalServerErrorException(errors);
+    const { access_token_key, refresh_token_key } = data;
+    const token =
+      this.req.cookies[access_token_key] ??
+      this.req.cookies[refresh_token_key] ??
+      '';
+    this.axios.defaults.headers['Authorization'] = `Bearer ${token}`;
   }
 
   initConfigAxiosSSO() {
-    if (this.axios) return this.axios;
-    const axiosInstance = this.httpServiceUtilService.axios;
-    axiosInstance.defaults.headers['x-webpage-key'] =
+    this.axios.defaults.headers['x-webpage-key'] =
       this.req.headers['x-webpage-key'];
 
-    axiosInstance.interceptors.response.use(
+    this.axios.interceptors.response.use(
       (res) => res,
-      ({ response: { data, status } }) => {
-        return { data, status };
+      (res) => {
+        const response = res.response;
+        if (response) {
+          const { data, status } = response;
+          return { data, status };
+        }
+        return res;
       }
     );
-    return axiosInstance;
   }
 
   async getUserInfo() {

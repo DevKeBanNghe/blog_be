@@ -35,16 +35,16 @@ export class SaveTokenInterceptor implements NestInterceptor {
     const req = getRequest<Request>();
     const res = getResponse<Response>();
     return next.handle().pipe(
-      map(async (data) => {
+      map((data) => {
         try {
           if (data?.access_token || data?.refresh_token) {
-            const resCustom = await this.setTokenToCookie(res, data);
-            // resCustom.status(200).json(
-            //   this.apiService.formatResponse({
-            //     path: req.path,
-            //     data,
-            //   })
-            // );
+            this.setTokenToCookie(res, data);
+            res.status(200).json(
+              this.apiService.formatResponse({
+                path: req.path,
+                data,
+              })
+            );
           }
         } catch (error) {
           Logger.error(error.message, data);

@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EnvVars } from 'src/consts';
+import { EnvVars, HttpHeaders } from 'src/consts';
 import { HttpServiceUtilService } from '../../httpService/http-service-util.service';
 import { SubscribeUserDto } from './dto/subscribe-user.dto';
 import { REQUEST } from '@nestjs/core';
@@ -21,8 +21,16 @@ export class SSOService {
   ) {
     this.url = this.configService.get(EnvVars.SSO_BE_URL);
     this.axios = this.httpServiceUtilService.axios;
+    this.axios.defaults.withCredentials = true;
+    this.setAxiosHeaders();
     this.initCookieConfig();
     this.initConfigAxiosSSO();
+  }
+
+  setAxiosHeaders() {
+    for (const key of Object.values(HttpHeaders)) {
+      this.axios.defaults.headers[key] = this.req.headers[key];
+    }
   }
 
   async initCookieConfig() {
@@ -37,9 +45,6 @@ export class SSOService {
   }
 
   initConfigAxiosSSO() {
-    this.axios.defaults.headers['x-webpage-key'] =
-      this.req.headers['x-webpage-key'];
-
     this.axios.interceptors.response.use(
       (res) => res,
       (res) => {

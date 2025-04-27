@@ -13,7 +13,6 @@ export class AuthService {
   async refreshToken(params = {}) {
     const { data: { data, errors } = {}, status } =
       await this.ssoService.refreshToken(params);
-    console.log('🚀 ~ AuthService ~ refreshToken ~ data:', data, params);
     const ExceptionClass =
       status === HttpStatus.UNAUTHORIZED
         ? UnauthorizedException

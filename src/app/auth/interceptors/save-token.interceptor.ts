@@ -2,6 +2,7 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
 } from '@nestjs/common';
 import { map, Observable } from 'rxjs';
@@ -31,9 +32,14 @@ export class SaveTokenInterceptor implements NestInterceptor {
     const res = getResponse<Response>();
     return next.handle().pipe(
       map((data) => {
-        if (data?.access_token || data?.refresh_token) {
-          this.setTokenToCookie(res, data);
+        try {
+          if (data?.access_token || data?.refresh_token) {
+            this.setTokenToCookie(res, data);
+          }
+        } catch (error) {
+          Logger.error(error.message, data);
         }
+
         return data;
       })
     );

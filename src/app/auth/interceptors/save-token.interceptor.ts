@@ -37,7 +37,7 @@ export class SaveTokenInterceptor implements NestInterceptor {
       map((data) => {
         if (data?.access_token || data?.refresh_token) {
           this.setTokenToCookie(res, data)
-            .then(() => {
+            .then((res) => {
               res.status(200).json(
                 this.apiServie.formatResponse({
                   path: req.path,

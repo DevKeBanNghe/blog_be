@@ -22,14 +22,18 @@ export class SSOService {
     this.url = this.configService.get(EnvVars.SSO_BE_URL);
     this.axios = this.httpServiceUtilService.axios;
     this.axios.defaults.withCredentials = true;
-    this.setAxiosHeaders();
+    this.setHeaders();
+    this.setTokenToHeaders();
     this.initConfigAxiosSSO();
   }
 
-  async setAxiosHeaders() {
+  setHeaders() {
     for (const key of Object.values(HttpHeaders)) {
       this.axios.defaults.headers[key] = this.req.headers[key];
     }
+  }
+
+  async setTokenToHeaders() {
     const { data: { data, errors } = {} } = await this.getCookieKeys();
     if (errors) throw new InternalServerErrorException(errors);
     const { access_token_key, refresh_token_key } = data;

@@ -1,15 +1,36 @@
-import { Controller, Get, Query, Res, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SaveTokenInterceptor } from './interceptors/save-token.interceptor';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { cookieConfigsDefault } from 'src/consts/cookie.const';
+import { ApiService } from 'src/common/utils/api/api.service';
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private apiServie: ApiService
+  ) {}
 
   @Get('/refresh-token')
-  @UseInterceptors(SaveTokenInterceptor)
-  async refreshToken(@Query('user_id') user_id: string) {
-    return await this.authService.refreshToken({ user_id });
+  async refreshToken(
+    @Query('user_id') user_id: string,
+    @Res() res: Response,
+    @Req() req: Request
+  ) {
+    const data = await this.authService.refreshToken({ user_id });
+    const cookieKeys = await this.authService.getCookieKeys();
+    const { access_token_key, refresh_token_key } = cookieKeys;
+    const { access_token, refresh_token } = data ?? {};
+    if (access_token)
+      res.cookie(access_token_key, access_token, cookieConfigsDefault);
+    if (refresh_token)
+      res.cookie(refresh_token_key, refresh_token, cookieConfigsDefault);
+    res.status(200).json(
+      this.apiServie.formatResponse({
+        path: req.path,
+        data,
+      })
+    );
+    return data;
   }
 
   @Get('logout')

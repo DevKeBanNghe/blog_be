@@ -23,17 +23,13 @@ export class SSOService {
     this.axios = this.httpServiceUtilService.axios;
     this.axios.defaults.withCredentials = true;
     this.setAxiosHeaders();
-    this.initCookieConfig();
     this.initConfigAxiosSSO();
   }
 
-  setAxiosHeaders() {
+  async setAxiosHeaders() {
     for (const key of Object.values(HttpHeaders)) {
       this.axios.defaults.headers[key] = this.req.headers[key];
     }
-  }
-
-  async initCookieConfig() {
     const { data: { data, errors } = {} } = await this.getCookieKeys();
     if (errors) throw new InternalServerErrorException(errors);
     const { access_token_key, refresh_token_key } = data;
@@ -41,7 +37,7 @@ export class SSOService {
       this.req.cookies[access_token_key] ??
       this.req.cookies[refresh_token_key] ??
       '';
-    this.axios.defaults.headers['Authorization'] = `Bearer ${token}`;
+    this.axios.defaults.headers[HttpHeaders.AUTHORIZATION] = `Bearer ${token}`;
   }
 
   initConfigAxiosSSO() {

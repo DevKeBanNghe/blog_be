@@ -21,4 +21,5 @@ export enum HttpHeaders {
   VERSION = 'x-version',
   REQUEST_ID = 'x-request-id',
   WEBPAGE_KEY = 'x-webpage-key',
+  AUTHORIZATION = 'Authorization',
 }

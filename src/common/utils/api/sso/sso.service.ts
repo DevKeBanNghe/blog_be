@@ -34,6 +34,7 @@ export class SSOService {
   }
 
   async setTokenHeaders() {
+    if (this.req.path.includes('/logout')) return;
     const { data: { data, errors } = {} } = await this.getCookieKeys();
     if (errors) throw new InternalServerErrorException(errors);
     const { access_token_key, refresh_token_key } = data;

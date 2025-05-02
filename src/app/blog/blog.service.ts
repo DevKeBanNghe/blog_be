@@ -252,7 +252,7 @@ export class BlogService
     blog_id,
     ...dataUpdate
   }: UpdateBlogTrackingInfoDto) {
-    return await this.prismaService.blog.update({
+    return await this.extended.update({
       data: {
         blog_view: {
           increment: 1,

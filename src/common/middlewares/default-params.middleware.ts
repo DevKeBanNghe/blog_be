@@ -8,13 +8,15 @@ import { HttpHeaders } from 'src/consts/enum.const';
 import { UserService } from 'src/app/user/user.service';
 import { Request } from '../interfaces/http.interface';
 import { ApiService } from '../utils/api/api.service';
+import { ContextIdFactory, ModuleRef } from '@nestjs/core';
 @Injectable()
 export class DefaultParamsMiddleware implements NestMiddleware {
+  private userService: UserService;
   constructor(
     private stringUtilService: StringUtilService,
     private configService: ConfigService,
-    private userService: UserService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private moduleRef: ModuleRef
   ) {}
   private customHeaders(headers: IncomingHttpHeaders) {
     const headersValueCustom = {
@@ -39,6 +41,9 @@ export class DefaultParamsMiddleware implements NestMiddleware {
     req.headers = headersCustom;
     if (this.apiService.isPathNotAuth({ originalUrl: req.originalUrl }))
       return next();
+    const contextId = ContextIdFactory.create();
+    this.moduleRef.registerRequestByContextId(req, contextId);
+    this.userService = await this.moduleRef.resolve(UserService, contextId);
     const user = await this.userService.getUserInfo();
     const userRequest = req.user ?? {};
     const userData = { ...userRequest, ...user };

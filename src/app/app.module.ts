@@ -29,6 +29,7 @@ import { AllExceptionFilter } from 'src/common/filters/all-exception.filter';
 import { AccessControlGuard } from 'src/common/guards/access-control/access-control.guard';
 import { ExcelUtilModule } from 'src/common/utils/excel/excel-util.module';
 import { QueryUtilModule } from 'src/common/utils/query/query-util.module';
+import { UserService } from './user/user.service';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { QueryUtilModule } from 'src/common/utils/query/query-util.module';
   controllers: [AppController],
   providers: [
     AppService,
+    UserService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

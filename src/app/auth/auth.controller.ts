@@ -36,8 +36,8 @@ export class AuthController {
   @Get('logout')
   async logout(@Res() res: Response) {
     const cookieKeys = await this.authService.getCookieKeys();
-    res.clearCookie(cookieKeys.access_token_key);
-    res.clearCookie(cookieKeys.refresh_token_key);
+    res.clearCookie(cookieKeys.access_token_key, cookieConfigsDefault);
+    res.clearCookie(cookieKeys.refresh_token_key, cookieConfigsDefault);
     res.status(200).json({});
     return {};
   }
